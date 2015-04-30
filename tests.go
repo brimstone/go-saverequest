@@ -82,8 +82,8 @@ func TestRequestFiles(t *testing.T, basedir string, handler func(http.ResponseWr
 		}
 
 		if w.Body.String() != string(response) {
-			t.Errorf("Response is not identical")
+			t.Errorf("Response is not identical\nExpected: \"%s\"\nReceived: \"%s\"\n", string(response), w.Body.String())
 		}
-		fmt.Printf("%d - %s", w.Code, w.Body.String())
+		fmt.Printf("%d - %s\n", w.Code, w.Body.String())
 	}
 }
