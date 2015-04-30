@@ -32,7 +32,7 @@ func Save(r *http.Request) {
 	if !WriteRequests {
 		return
 	}
-	log.Println("Saving", r.URL.Path)
+	log.Println("Saving", r.URL.Path, "to", RequestDir+r.URL.Path)
 	// create the proper directory structure for our request
 	dir := RequestDir + r.URL.Path
 	err := os.MkdirAll(dir, 0755)
