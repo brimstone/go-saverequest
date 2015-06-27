@@ -12,6 +12,24 @@ import (
 	"testing"
 )
 
+func FakeRequest(method string, path string, headers map[string]string, body string) (*http.Request, error) {
+	// build our request
+	req, err := http.NewRequest(method, "http://example.com"+path, nil)
+	req.RequestURI = path
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
+
+	// TODO add in body
+	req.Body = nopCloser{bytes.NewBufferString(body)}
+	req.ContentLength = int64(len(body))
+	// return our request
+	return req, nil
+}
+
 func newRequestFromFile(filename string) (*http.Request, error) {
 	// read in our file
 	content, err := ioutil.ReadFile(filename)
@@ -24,25 +42,17 @@ func newRequestFromFile(filename string) (*http.Request, error) {
 	method := firstline[0]
 	path := firstline[1]
 
-	// build our request
-	req, err := http.NewRequest(method, "http://example.com"+path, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO add in headers
+	// add in headers
+	headers := make(map[string]string)
 	var l = 1
 	for ; lines[l] != ""; l++ {
 		header := strings.SplitN(lines[l], ": ", 2)
-		req.Header.Add(header[0], header[1])
+		headers[header[0]] = header[1]
 	}
 
-	// TODO add in body
 	body := content[len(strings.Join(lines[:l+1], "\n"))+1:]
-	req.Body = nopCloser{bytes.NewBufferString(string(body))}
-	req.ContentLength = int64(len(body))
-	// return our request
-	return req, nil
+	return FakeRequest(method, path, headers, string(body))
+
 }
 
 func TestRequestFiles(t *testing.T, basedir string, handler func(http.ResponseWriter, *http.Request)) {
